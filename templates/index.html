@@ -1286,10 +1286,23 @@
             }
         }
 
-        async function triggerExplorerOpen() {
+        async function triggerExplorerOpen(event) {
+            const btn = event ? event.currentTarget : null;
+            if (btn) btn.innerText = "Açılıyor...";
             try {
-                await fetch("/api/open-folder", { method: "POST" });
-            } catch(e) {}
+                const res = await fetch("/api/open-folder", { method: "POST" });
+                const data = await res.json();
+                if (data.success) {
+                    if (btn) btn.innerText = "✔ Açıldı!";
+                    setTimeout(() => { if (btn) btn.innerText = "📂 Gezginde Aç"; }, 2000);
+                } else {
+                    alert("Açılamadı: " + (data.error || "Bilinmeyen hata"));
+                    if (btn) btn.innerText = "📂 Gezginde Aç";
+                }
+            } catch(e) {
+                alert("Bağlantı hatası: " + e.message);
+                if (btn) btn.innerText = "📂 Gezginde Aç";
+            }
         }
 
         function closeOutputModal() {
@@ -1323,7 +1336,7 @@
                     <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="copyFolderPath()">
                         📋 Yolu Kopyala
                     </button>
-                    <button class="btn btn-emerald" style="padding: 6px 12px; font-size: 0.75rem;" onclick="triggerExplorerOpen()">
+                    <button class="btn btn-emerald" style="padding: 6px 12px; font-size: 0.75rem;" onclick="triggerExplorerOpen(event)">
                         📂 Gezginde Aç
                     </button>
                 </div>

@@ -304,7 +304,11 @@ def open_output_folder():
     out_dir.mkdir(parents=True, exist_ok=True)
     try:
         if sys.platform == "win32":
-            subprocess.Popen(f'explorer.exe "{str(out_dir)}"', shell=True)
+            subprocess.Popen(["cmd.exe", "/c", "start", "", str(out_dir)])
+            try:
+                os.startfile(str(out_dir))
+            except Exception:
+                pass
         elif sys.platform == "darwin":
             subprocess.Popen(["open", str(out_dir)])
         else:
