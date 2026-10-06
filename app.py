@@ -35,10 +35,12 @@ if sys.platform == "win32":
 app = Flask(__name__, template_folder="templates")
 
 BASE_DIR = Path(__file__).parent.resolve()
+DEFAULT_DESKTOP_OUTPUT = Path.home() / "Desktop" / "Scenepacks"
 CONFIG = ScenepackConfig(
-    output_dir=BASE_DIR / "output_scenepacks",
+    output_dir=DEFAULT_DESKTOP_OUTPUT,
     temp_dir=BASE_DIR / "temp_cache"
 )
+CONFIG.output_dir.mkdir(parents=True, exist_ok=True)
 MEDIA_ENGINE = YouTubeMediaEngine(CONFIG)
 FACE_PICKER = VideoFacePicker(characters_base_dir=BASE_DIR / "characters")
 
@@ -340,10 +342,46 @@ def download_output_file(filename):
     out_dir = Path(CONFIG.output_dir).resolve()
     return send_from_directory(out_dir, filename, as_attachment=False)
 
-def run_scenepack_thread(url: str, match_logic: str, min_duration: float, quality: str, selected_indices: Optional[List[int]] = None):
+@app.route("/api/get-settings", methods=["GET"])
+def get_settings():
+    """Mevcut ayarları ve hazır klasör yollarını döner."""
+    desktop = (Path.home() / "Desktop" / "Scenepacks").resolve()
+    videos = (Path.home() / "Videos" / "Scenepacks").resolve()
+    project = (BASE_DIR / "output_scenepacks").resolve()
+    return jsonify({
+        "output_dir": str(CONFIG.output_dir.resolve()),
+        "desktop_dir": str(desktop),
+        "videos_dir": str(videos),
+        "project_dir": str(project)
+    })
+
+@app.route("/api/set-output-dir", methods=["POST"])
+def set_output_dir():
+    """Kullanıcının belirlediği çıktı klasörünü günceller."""
+    data = request.json or {}
+    new_dir = data.get("output_dir", "").strip()
+    if not new_dir:
+        return jsonify({"error": "Geçerli bir klasör yolu giriniz."}), 400
+    try:
+        p = Path(new_dir).resolve()
+        p.mkdir(parents=True, exist_ok=True)
+        CONFIG.output_dir = p
+        return jsonify({"success": True, "output_dir": str(p)})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+def run_scenepack_thread(url: str, match_logic: str, min_duration: float, quality: str, selected_indices: Optional[List[int]] = None, custom_output_dir: Optional[str] = None):
     """Arka planda çalışan asenkron sahne kesme işlemi."""
     global TASK_STATE
     try:
+        if custom_output_dir:
+            try:
+                p = Path(custom_output_dir).resolve()
+                p.mkdir(parents=True, exist_ok=True)
+                CONFIG.output_dir = p
+            except Exception:
+                pass
+
         TASK_STATE["status"] = "running"
         TASK_STATE["progress_pct"] = 0
         TASK_STATE["matched_scenes"] = []
@@ -511,9 +549,10 @@ def start_scenepack():
     if not url:
         return jsonify({"error": "YouTube linki zorunludur."}), 400
 
+    custom_dir = data.get("output_dir", "").strip()
     thread = threading.Thread(
         target=run_scenepack_thread,
-        args=(url, match_logic, min_duration, quality, selected_indices),
+        args=(url, match_logic, min_duration, quality, selected_indices, custom_dir),
         daemon=True
     )
     thread.start()
@@ -525,20 +564,10 @@ def task_status():
     """Canlı işlem durumunu ve ilerlemeyi döner."""
     return jsonify(TASK_STATE)
 
-@app.route("/api/open-folder", methods=["POST"])
-def open_folder():
-    """Çıktı klasörünü Windows Dosya Gezgini'nde açar."""
-    CONFIG.output_dir.mkdir(parents=True, exist_ok=True)
-    if sys.platform == "win32":
-        os.startfile(str(CONFIG.output_dir))
-    else:
-        subprocess.run(["xdg-open", str(CONFIG.output_dir)])
-    return jsonify({"success": True})
-
 @app.route("/output_scenepacks/<path:filename>")
 def serve_output_file(filename):
     """Kesilen MP4 videolarını tarayıcıdan önizlemek için sunar."""
-    return send_from_directory(str(CONFIG.output_dir), filename)
+    return send_from_directory(str(CONFIG.output_dir.resolve()), filename)
 
 if __name__ == "__main__":
     print("\n" + "=" * 60)

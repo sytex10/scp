@@ -683,6 +683,30 @@
                         </select>
                     </div>
 
+                    <!-- Kayıt Klasörü Seçimi -->
+                    <div style="margin-bottom: 18px; background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 10px; border: 1px solid var(--border-color);">
+                        <label style="font-size: 0.82rem; color: var(--text-main); font-weight: 600; display: block; margin-bottom: 6px;">
+                            📂 Videoların Kaydedileceği Klasör (İstediğin Yolu Seç)
+                        </label>
+                        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                            <input type="text" id="outputDirPathInput" class="text-input" style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;" placeholder="C:\Users\Emin\Desktop\Scenepacks">
+                            <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="saveOutputDir()">
+                                💾 Kaydet
+                            </button>
+                        </div>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.72rem;" onclick="setPresetDir('desktop')" title="Masaüstünde Scenepacks klasörü">
+                                🖥️ Masaüstü
+                            </button>
+                            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.72rem;" onclick="setPresetDir('videos')" title="Videolarım klasörü">
+                                🎬 Videolarım
+                            </button>
+                            <button class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.72rem;" onclick="setPresetDir('project')" title="Proje klasörü içindeki çıktı">
+                                📁 Proje İçi
+                            </button>
+                        </div>
+                    </div>
+
                     <button class="btn btn-emerald" id="btnStartScenepack" style="width: 100%; padding: 14px; font-size: 1rem;" onclick="startScenepack()">
                         🚀 Sahne Paketini Oluşturmaya Başla
                     </button>
@@ -775,6 +799,7 @@
 
         document.addEventListener("DOMContentLoaded", () => {
             loadCharacters();
+            loadSettings();
             checkTaskStatus();
             pollInterval = setInterval(checkTaskStatus, 2000);
         });
@@ -1119,6 +1144,60 @@
             }
         }
 
+        // Ayarlar & Kayıt Klasörü Yönetimi
+        let systemSettings = {};
+
+        async function loadSettings() {
+            try {
+                const res = await fetch("/api/get-settings");
+                const data = await res.json();
+                systemSettings = data;
+                const input = document.getElementById("outputDirPathInput");
+                if (input && data.output_dir) {
+                    input.value = data.output_dir;
+                }
+                const modalPath = document.getElementById("modalFolderPath");
+                if (modalPath && data.output_dir) {
+                    modalPath.innerText = data.output_dir;
+                }
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function saveOutputDir() {
+            const input = document.getElementById("outputDirPathInput");
+            const val = input ? input.value.trim() : "";
+            if (!val) return alert("Lütfen bir klasör yolu girin!");
+
+            try {
+                const res = await fetch("/api/set-output-dir", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ output_dir: val })
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                alert("Kayıt klasörü güncellendi:\n" + data.output_dir);
+                loadSettings();
+            } catch(e) {
+                alert("Hata: " + e.message);
+            }
+        }
+
+        function setPresetDir(type) {
+            const input = document.getElementById("outputDirPathInput");
+            if (!input) return;
+            if (type === 'desktop' && systemSettings.desktop_dir) {
+                input.value = systemSettings.desktop_dir;
+            } else if (type === 'videos' && systemSettings.videos_dir) {
+                input.value = systemSettings.videos_dir;
+            } else if (type === 'project' && systemSettings.project_dir) {
+                input.value = systemSettings.project_dir;
+            }
+            saveOutputDir();
+        }
+
         // 6. Scenepack Başlat
         async function startScenepack() {
             const url = document.getElementById("youtubeUrl").value.trim();
@@ -1127,6 +1206,7 @@
             const logic = document.getElementById("matchLogic").value;
             const minDur = document.getElementById("minDuration").value;
             const quality = document.getElementById("videoQuality").value;
+            const outputDir = document.getElementById("outputDirPathInput") ? document.getElementById("outputDirPathInput").value.trim() : "";
 
             // Playlistten seçilen videoları al
             let selectedIndices = null;
@@ -1150,7 +1230,8 @@
                         logic,
                         min_duration: minDur,
                         quality,
-                        selected_indices: selectedIndices
+                        selected_indices: selectedIndices,
+                        output_dir: outputDir
                     })
                 });
                 const data = await res.json();
