@@ -33,6 +33,8 @@ if sys.platform == "win32":
         pass
 
 app = Flask(__name__, template_folder="templates")
+app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 0
 
 BASE_DIR = Path(__file__).parent.resolve()
 DEFAULT_DESKTOP_OUTPUT = Path.home() / "Desktop" / "Scenepacks"
@@ -306,9 +308,27 @@ def open_output_folder():
     out_dir.mkdir(parents=True, exist_ok=True)
     try:
         if sys.platform == "win32":
-            subprocess.Popen(["cmd.exe", "/c", "start", "", str(out_dir)])
+            # 1. os.startfile (ShellExecute)
             try:
                 os.startfile(str(out_dir))
+            except Exception:
+                pass
+            # 2. Doğrudan explorer.exe çağrısı
+            try:
+                subprocess.Popen(["explorer.exe", str(out_dir)])
+            except Exception:
+                pass
+            # 3. PowerShell Start-Process explorer.exe ile yeni pencereyi zorla aç
+            try:
+                subprocess.Popen([
+                    "powershell", "-NoProfile", "-Command",
+                    f"Start-Process explorer.exe -ArgumentList '/n,`\"{str(out_dir)}`\"'"
+                ])
+            except Exception:
+                pass
+            # 4. Shell.Application COM
+            try:
+                subprocess.Popen(["powershell", "-NoProfile", "-Command", f'(New-Object -ComObject Shell.Application).Explore("{str(out_dir)}")'])
             except Exception:
                 pass
         elif sys.platform == "darwin":
@@ -347,11 +367,13 @@ def get_settings():
     """Mevcut ayarları ve hazır klasör yollarını döner."""
     desktop = (Path.home() / "Desktop" / "Scenepacks").resolve()
     videos = (Path.home() / "Videos" / "Scenepacks").resolve()
+    downloads = (Path.home() / "Downloads" / "Scenepacks").resolve()
     project = (BASE_DIR / "output_scenepacks").resolve()
     return jsonify({
         "output_dir": str(CONFIG.output_dir.resolve()),
         "desktop_dir": str(desktop),
         "videos_dir": str(videos),
+        "downloads_dir": str(downloads),
         "project_dir": str(project)
     })
 
