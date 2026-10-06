@@ -1,0 +1,24 @@
+# AI Scenepack Maker - Python Bağımlılıkları
+# Python 3.10, 3.11 veya 3.12 ile uyumludur.
+
+# Medya İndirme ve Yönetim
+yt-dlp>=2024.08.06
+
+# Sahne Değişimi Algılama (PySceneDetect)
+scenedetect[opencv]>=0.6.4
+
+# Görüntü İşleme & Bilgisayarlı Görü
+opencv-python>=4.9.0
+numpy>=1.26.0
+Pillow>=10.2.0
+
+# Yüz Tanıma & Yapay Zeka Motoru
+# DeepFace TensorFlow/PyTorch altyapısıyla çalışır ve birden çok model (VGG-Face, Facenet, ArcFace) destekler.
+deepface>=0.0.92
+
+# Alternatif hafif motor (isteğe bağlı dlib/face_recognition):
+# face_recognition>=1.3.0
+
+# Şık Terminal Arayüzü & İlerleme Çubukları
+rich>=13.7.1
+tqdm>=4.66.4

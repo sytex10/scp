@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI YouTube Scenepack Maker | Stüdyo Arayüzü</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #080c14;
+            --bg-surface: #0f172a;
+            --bg-card: rgba(30, 41, 59, 0.7);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(6, 182, 212, 0.3);
+            --primary: #06b6d4;
+            --primary-hover: #0891b2;
+            --accent-purple: #8b5cf6;
+            --accent-emerald: #10b981;
+            --accent-rose: #f43f5e;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(6, 182, 212, 0.08) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.08) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        header {
+            padding: 18px 32px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(16px);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--primary), var(--accent-purple));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+        }
+
+        .brand-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #fff, #cbd5e1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .brand-badge {
+            font-size: 0.75rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--primary);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            font-weight: 600;
+        }
+
+        /* Container */
+        .main-container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 32px 24px;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* Grid */
+        .app-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 1024px) {
+            .app-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Glass Cards */
+        .glass-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            transition: var(--transition);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .card-title span.step-number {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+
+        /* Inputs & Buttons */
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .text-input {
+            flex: 1;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: var(--transition);
+        }
+
+        .text-input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(6, 182, 212, 0.25);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+            color: #fff;
+            border: none;
+            border-radius: var(--radius-md);
+            padding: 12px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(6, 182, 212, 0.45);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            box-shadow: none;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: none;
+        }
+
+        .btn-purple {
+            background: linear-gradient(135deg, var(--accent-purple), #7c3aed);
+            box-shadow: 0 4px 14px rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-purple:hover {
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.45);
+        }
+
+        .btn-emerald {
+            background: linear-gradient(135deg, var(--accent-emerald), #059669);
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+        }
+
+        /* Playlist Öğe Seçici */
+        .playlist-item-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(30, 41, 59, 0.4);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: var(--transition);
+        }
+        .playlist-item-row:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+        .playlist-item-title {
+            flex: 1;
+            font-size: 0.8rem;
+            color: var(--text-main);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .playlist-item-dur {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Karakterler ve Kayıtlı Yüzler (Dikey / Alt Alta) */
+        .char-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 14px;
+        }
+
+        .char-group-card {
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            transition: var(--transition);
+        }
+
+        .char-group-card:hover {
+            border-color: rgba(6, 182, 212, 0.4);
+        }
+
+        .char-group-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin-bottom: 12px;
+        }
+
+        .char-group-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .char-group-badge {
+            font-size: 0.72rem;
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--primary);
+            padding: 3px 10px;
+            border-radius: 12px;
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            font-weight: 600;
+        }
+
+        .char-group-del-btn {
+            background: rgba(244, 63, 94, 0.15);
+            color: var(--accent-rose);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .char-group-del-btn:hover {
+            background: var(--accent-rose);
+            color: #fff;
+        }
+
+        /* Yüzlerin Alt Alta Listesi */
+        .char-faces-vertical-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 250px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .char-face-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(30, 41, 59, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 6px 12px;
+            transition: var(--transition);
+        }
+
+        .char-face-row:hover {
+            background: rgba(30, 41, 59, 0.9);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+
+        .char-face-row-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .char-face-thumb {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: #000;
+        }
+
+        .char-face-label {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .char-face-sub {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .char-face-del-btn {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .char-face-del-btn:hover {
+            background: rgba(244, 63, 94, 0.2);
+            color: var(--accent-rose);
+            border-color: rgba(244, 63, 94, 0.4);
+        }
+
+        /* Video Yüz Seçici Alanı */
+        .picker-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            margin-top: 16px;
+        }
+
+        .timeline-slider {
+            width: 100%;
+            accent-color: var(--primary);
+            margin: 12px 0;
+            cursor: pointer;
+        }
+
+        .preview-faces-container {
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+            padding: 8px 0;
+            margin-top: 12px;
+        }
+
+        .face-crop-card {
+            background: rgba(30, 41, 59, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 8px;
+            flex-shrink: 0;
+            width: 120px;
+            text-align: center;
+        }
+
+        .face-crop-card img {
+            width: 100%;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 6px;
+        }
+
+        /* Progress & Konsol */
+        .progress-bar-bg {
+            width: 100%;
+            height: 12px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 16px 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--accent-purple));
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .console-box {
+            background: #050811;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: #38bdf8;
+            height: 180px;
+            overflow-y: auto;
+            margin-top: 16px;
+            line-height: 1.5;
+        }
+
+        /* Sahneler Tablosu */
+        .scene-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+            font-size: 0.85rem;
+        }
+
+        .scene-table th {
+            text-align: left;
+            padding: 10px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .scene-table td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .scene-tag {
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent-emerald);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        .modal-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            width: 90%;
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand-logo">
+            <div class="brand-icon">🎬</div>
+            <div>
+                <div class="brand-title">AI Scenepack Maker</div>
+            </div>
+            <span class="brand-badge">Stüdyo Sürümü</span>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn btn-secondary" onclick="openOutputFolder()">
+                📁 Çıktı Klasörünü Aç
+            </button>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="app-grid">
+            
+            <!-- SOL PANEL: GİRDİLER VE VİDEODAN YÜZ SEÇİCİ -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+
+                <!-- 1. YouTube Bağlantısı -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="step-number">1</span>
+                            YouTube Video veya Playlist
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" id="youtubeUrl" class="text-input" placeholder="https://www.youtube.com/watch?v=... veya Playlist linki">
+                        <button class="btn" id="btnInspect" onclick="inspectUrl()">
+                            🔍 İncele
+                        </button>
+                    </div>
+
+                    <div id="videoInfoBox" style="display: none; background: rgba(15, 23, 42, 0.7); padding: 14px; border-radius: 10px; font-size: 0.85rem; color: var(--text-muted); border: 1px solid var(--border-color); margin-top: 14px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span id="videoCountBadge" style="color: var(--primary); font-weight: 600;"></span>
+                            <button class="btn btn-secondary" id="btnToggleAllVideos" style="padding: 4px 10px; font-size: 0.75rem;" onclick="toggleSelectAllVideos()">
+                                ☑ Tümünü Kaldır / Seç
+                            </button>
+                        </div>
+                        <div id="firstVideoTitle" style="color: var(--text-main); font-weight: 500; margin-bottom: 10px;"></div>
+                        <div id="playlistSelectorArea" style="max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; padding-right: 4px;"></div>
+                    </div>
+                </div>
+
+                <!-- 2. Karakter Tanımlama & Videodan Seçme -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="step-number">2</span>
+                            Hedef Karakterler (Yüzler)
+                        </div>
+                        <button class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 12px;" onclick="loadCharacters()">
+                            🔄 Yenile
+                        </button>
+                    </div>
+
+                    <!-- Kayıtlı Karakterler ve Yüzler (Alt Alta Liste) -->
+                    <div id="charactersList" class="char-container">
+                        <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 12px;">
+                            Henüz karakter eklenmedi. Aşağıdan videodan seçin veya fotoğraf yükleyin.
+                        </div>
+                    </div>
+
+                    <!-- Doğrudan Videodan Seçim Kutusu -->
+                    <div class="picker-box">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.9rem; font-weight: 600; color: var(--primary);">
+                                🎯 Doğrudan Video İçinden Yüz Seç
+                            </span>
+                            <button class="btn btn-purple" id="btnPrepareProxy" style="padding: 6px 12px; font-size: 0.8rem;" onclick="prepareVideoProxy()">
+                                ⚡ Videoyu Hazırla
+                            </button>
+                        </div>
+
+                        <div id="proxyPickerControls" style="display: none; margin-top: 14px;">
+                            <!-- Canlı Video Oynatıcı Önizleme Ekranı -->
+                            <div style="position: relative; border-radius: 12px; overflow: hidden; background: #000; border: 1px solid var(--border-color); box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+                                <video id="previewVideoPlayer" controls playsinline preload="metadata" style="width: 100%; max-height: 280px; display: block; object-fit: contain;" ontimeupdate="onVideoTimeUpdate()">
+                                    Tarayıcınız video oynatmayı desteklemiyor.
+                                </video>
+                                <div id="videoTimeOverlay" style="position: absolute; top: 10px; right: 10px; background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(8px); padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; color: var(--primary); font-family: 'JetBrains Mono', monospace; font-weight: 600; border: 1px solid var(--border-color);">
+                                    00:00 / 00:00
+                                </div>
+                            </div>
+
+                            <!-- Oynatıcı Kontrolleri & Hızlı Sarma -->
+                            <div style="display: flex; gap: 6px; margin-top: 10px; align-items: center;">
+                                <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.75rem;" onclick="seekPlayer(-30)" title="30 saniye geri">⏪ -30s</button>
+                                <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.75rem;" onclick="seekPlayer(-5)" title="5 saniye geri">◀ -5s</button>
+                                <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.75rem;" onclick="togglePlayPause()" id="btnPlayPause">⏯ Oynat/Durdur</button>
+                                <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.75rem;" onclick="seekPlayer(5)" title="5 saniye ileri">+5s ▶</button>
+                                <button class="btn btn-secondary" style="padding: 8px 12px; font-size: 0.75rem;" onclick="seekPlayer(30)" title="30 saniye ileri">+30s ⏩</button>
+                            </div>
+
+                            <!-- Kare Yakala Butonu -->
+                            <button class="btn btn-emerald" style="width: 100%; margin-top: 12px; padding: 12px; font-size: 0.95rem; font-weight: 700; box-shadow: 0 4px 16px rgba(16, 185, 129, 0.4);" onclick="extractFacesFromPlayer()">
+                                📸 Bu Anı Yakala & Yüzleri Tespit Et
+                            </button>
+
+                            <!-- Yakalanan Kare ve Tespit Edilen Yüzler -->
+                            <div id="capturePreviewArea" style="display: none; margin-top: 14px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); border-radius: 10px; padding: 12px;">
+                                <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted); margin-bottom: 8px;">
+                                    Tespit Edilen Yüzler:
+                                </div>
+                                <div id="detectedFacesContainer" class="preview-faces-container"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Ayarlar & Başlatma -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="step-number">3</span>
+                            Tarama Ayarları & Başlat
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px;">
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px;">Eşleşme Mantığı</label>
+                            <select id="matchLogic" class="text-input" style="width: 100%;">
+                                <option value="OR">OR (Karakterlerden herhangi biri varsa)</option>
+                                <option value="AND">AND (Karakterler aynı sahnede birlikteyse)</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px;">Minimum Sahne Süresi</label>
+                            <select id="minDuration" class="text-input" style="width: 100%;">
+                                <option value="2.0">2.0 Saniye</option>
+                                <option value="3.0">3.0 Saniye</option>
+                                <option value="4.0">4.0 Saniye</option>
+                                <option value="1.5">1.5 Saniye</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 18px;">
+                        <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px;">Kesim Kalitesi (YouTube'dan)</label>
+                        <select id="videoQuality" class="text-input" style="width: 100%;">
+                            <option value="1080p">1080p Full HD (Önerilen)</option>
+                            <option value="720p">720p HD</option>
+                            <option value="best">En Yüksek (Orijinal 2K/4K Varsa)</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-emerald" id="btnStartScenepack" style="width: 100%; padding: 14px; font-size: 1rem;" onclick="startScenepack()">
+                        🚀 Sahne Paketini Oluşturmaya Başla
+                    </button>
+                    <button class="btn" id="btnCancelScenepack" style="display: none; width: 100%; margin-top: 10px; padding: 14px; font-size: 1rem; background: linear-gradient(135deg, #f43f5e, #be123c); box-shadow: 0 4px 14px rgba(244, 63, 94, 0.4);" onclick="cancelScenepack()">
+                        ⏹ İşlemi İptal Et / Durdur
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- SAĞ PANEL: CANLI İLERLEME, LOGLAR VE BULUNAN SAHNELER -->
+            <div style="display: flex; flex-direction: column; gap: 24px;">
+
+                <!-- Canlı Durum Kartı -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="card-title">
+                            <span class="step-number">4</span>
+                            Canlı İşlem & Durum
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <button class="btn" id="btnCancelScenepackMini" style="display: none; padding: 4px 10px; font-size: 0.75rem; background: #e11d48; box-shadow: none;" onclick="cancelScenepack()">
+                                ⏹ İptal Et
+                            </button>
+                            <span id="statusBadge" style="font-size: 0.75rem; padding: 4px 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.08); color: var(--text-muted);">
+                                Beklemede
+                            </span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+                            <span id="currentStepText" style="color: var(--primary); font-weight: 500;">Hazır</span>
+                            <span id="progressPctText" style="font-weight: 700;">%0</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div id="progressBarFill" class="progress-bar-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Canlı Konsol Logları -->
+                    <div id="consoleLog" class="console-box">
+                        [SİSTEM] AI Scenepack Web Motoru Hazır.<br>
+                        [SİSTEM] Bir YouTube linki girerek başlayın.
+                    </div>
+                </div>
+
+                <!-- Bulunan Sahneler Tablosu -->
+                <div class="glass-card" style="flex: 1;">
+                    <div class="card-header">
+                        <div class="card-title">
+                            🎬 Tespit Edilen & Kesilen Sahneler
+                        </div>
+                        <span id="matchedCountBadge" style="color: var(--accent-emerald); font-weight: 700; font-size: 0.9rem;">0 Sahne</span>
+                    </div>
+
+                    <div style="max-height: 380px; overflow-y: auto;">
+                        <table class="scene-table">
+                            <thead>
+                                <tr>
+                                    <th>Sahne</th>
+                                    <th>Zaman Aralığı</th>
+                                    <th>Süre</th>
+                                    <th>Karakter</th>
+                                </tr>
+                            </thead>
+                            <tbody id="matchedScenesTableBody">
+                                <tr>
+                                    <td colspan="4" style="text-align: center; color: var(--text-muted); padding: 24px;">
+                                        Henüz eşleşen sahne yok.
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        let inspectedVideos = [];
+        let activeProxyFilename = "";
+        let proxyDuration = 0;
+        let pollInterval = null;
+        let allVideosSelected = true;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            loadCharacters();
+            checkTaskStatus();
+            pollInterval = setInterval(checkTaskStatus, 2000);
+        });
+
+        // 1. URL İncele
+        async function inspectUrl() {
+            const url = document.getElementById("youtubeUrl").value.trim();
+            if (!url) return alert("Lütfen bir YouTube linki girin!");
+
+            const btn = document.getElementById("btnInspect");
+            btn.disabled = true;
+            btn.innerText = "Taranıyor...";
+
+            try {
+                const res = await fetch("/api/inspect-url", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ url })
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                inspectedVideos = data.videos || [];
+                document.getElementById("videoInfoBox").style.display = "block";
+                
+                const area = document.getElementById("playlistSelectorArea");
+                area.innerHTML = "";
+
+                if (inspectedVideos.length > 1) {
+                    document.getElementById("btnToggleAllVideos").style.display = "inline-block";
+                    inspectedVideos.forEach(v => {
+                        const row = document.createElement("div");
+                        row.className = "playlist-item-row";
+                        row.innerHTML = `
+                            <input type="checkbox" class="playlist-video-checkbox" value="${v.index}" checked id="vid_cb_${v.index}" onchange="updateSelectedCountBadge()">
+                            <label for="vid_cb_${v.index}" style="cursor: pointer; display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0;">
+                                <span style="font-weight: 700; color: var(--primary); font-size: 0.75rem;">#${v.index}</span>
+                                <span class="playlist-item-title" title="${v.title}">${v.title}</span>
+                                <span class="playlist-item-dur">${v.duration_formatted}</span>
+                            </label>
+                            <button class="btn btn-secondary" style="padding: 3px 8px; font-size: 0.7rem;" onclick="prepareVideoProxyByIndex(${v.index})" title="Bu videodan yüz seç">
+                                🎯 Yüz Seç
+                            </button>
+                        `;
+                        area.appendChild(row);
+                    });
+                } else {
+                    document.getElementById("btnToggleAllVideos").style.display = "none";
+                    if (inspectedVideos[0]) {
+                        area.innerHTML = `<div style="color: var(--text-main); font-weight: 500;">${inspectedVideos[0].title} (${inspectedVideos[0].duration_formatted})</div>`;
+                    }
+                }
+                updateSelectedCountBadge();
+
+            } catch (err) {
+                alert("Hata: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "🔍 İncele";
+            }
+        }
+
+        function updateSelectedCountBadge() {
+            if (inspectedVideos.length <= 1) {
+                document.getElementById("videoCountBadge").innerText = `✔ Tekil Video`;
+                return;
+            }
+            const checkedCount = document.querySelectorAll('.playlist-video-checkbox:checked').length;
+            document.getElementById("videoCountBadge").innerText = `✔ ${checkedCount} / ${inspectedVideos.length} Video Seçili`;
+        }
+
+        function toggleSelectAllVideos() {
+            allVideosSelected = !allVideosSelected;
+            document.querySelectorAll('.playlist-video-checkbox').forEach(cb => {
+                cb.checked = allVideosSelected;
+            });
+            updateSelectedCountBadge();
+        }
+
+        function prepareVideoProxyByIndex(index) {
+            const vid = inspectedVideos[index - 1];
+            if (!vid) return;
+            prepareVideoProxy(vid.url, vid.id, vid.title);
+        }
+
+        // 2. Videodan Proxy Hazırla
+        async function prepareVideoProxy(overrideUrl, overrideId, overrideTitle) {
+            const url = document.getElementById("youtubeUrl").value.trim();
+            const firstVid = inspectedVideos[0] || {};
+            const targetUrl = overrideUrl || firstVid.url || url;
+            const targetId = overrideId || firstVid.id || "preview";
+            const targetTitle = overrideTitle || firstVid.title || "Video";
+
+            if (!targetUrl) return alert("Önce bir YouTube linki girip inceleyin!");
+
+            const btn = document.getElementById("btnPrepareProxy");
+            btn.disabled = true;
+            btn.innerText = `Hazırlanıyor (~15sn)...`;
+
+            try {
+                const res = await fetch("/api/prepare-proxy", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        url: targetUrl,
+                        id: targetId
+                    })
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                activeProxyFilename = data.proxy_filename;
+                proxyDuration = data.duration;
+
+                const player = document.getElementById("previewVideoPlayer");
+                if (player && data.video_url) {
+                    player.src = data.video_url;
+                    player.load();
+                }
+
+                document.getElementById("proxyPickerControls").style.display = "block";
+                btn.innerText = `✔ Hazır: ${targetTitle.substring(0, 15)}...`;
+                btn.disabled = false;
+            } catch (err) {
+                alert("Proxy Hatası: " + err.message);
+                btn.innerText = "⚡ Videoyu Hazırla";
+                btn.disabled = false;
+            }
+        }
+
+        function onVideoTimeUpdate() {
+            const player = document.getElementById("previewVideoPlayer");
+            if (!player) return;
+            const cur = Math.floor(player.currentTime);
+            const total = Math.floor(player.duration || proxyDuration || 0);
+            const curStr = `${Math.floor(cur/60).toString().padStart(2, '0')}:${(cur%60).toString().padStart(2, '0')}`;
+            const totStr = `${Math.floor(total/60).toString().padStart(2, '0')}:${(total%60).toString().padStart(2, '0')}`;
+            const timeOverlay = document.getElementById("videoTimeOverlay");
+            if (timeOverlay) timeOverlay.innerText = `${curStr} / ${totStr}`;
+        }
+
+        function togglePlayPause() {
+            const player = document.getElementById("previewVideoPlayer");
+            if (!player) return;
+            const btn = document.getElementById("btnPlayPause");
+            if (player.paused) {
+                player.play();
+                if (btn) btn.innerText = "⏸ Durdur";
+            } else {
+                player.pause();
+                if (btn) btn.innerText = "▶ Oynat";
+            }
+        }
+
+        function seekPlayer(seconds) {
+            const player = document.getElementById("previewVideoPlayer");
+            if (!player) return;
+            player.currentTime = Math.max(0, Math.min(player.duration || proxyDuration, player.currentTime + seconds));
+        }
+
+        // 3. Oynatıcının Durdurulduğu Andaki Yüzleri Tara
+        async function extractFacesFromPlayer() {
+            if (!activeProxyFilename) return alert("Önce videoyu hazırlayın!");
+            const player = document.getElementById("previewVideoPlayer");
+            const sec = player ? player.currentTime : 0;
+            if (player && !player.paused) {
+                player.pause();
+                const btn = document.getElementById("btnPlayPause");
+                if (btn) btn.innerText = "▶ Oynat";
+            }
+
+            const previewArea = document.getElementById("capturePreviewArea");
+            const container = document.getElementById("detectedFacesContainer");
+            previewArea.style.display = "block";
+            container.innerHTML = "<div style='color: var(--primary); font-size: 0.8rem; padding: 10px;'>📸 Bu karedeki yüzler taranıyor...</div>";
+
+            try {
+                const res = await fetch("/api/extract-faces-at-time", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        proxy_filename: activeProxyFilename,
+                        timestamp_sec: sec
+                    })
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                container.innerHTML = "";
+                if (data.faces.length === 0) {
+                    container.innerHTML = "<div style='color: var(--text-muted); font-size: 0.8rem; padding: 10px;'>Bu karede belirgin yüz bulunamadı, videoyu oynatıp karakteri gördüğünüzde tekrar basın.</div>";
+                    return;
+                }
+
+                data.faces.forEach(f => {
+                    const card = document.createElement("div");
+                    card.className = "face-crop-card";
+                    card.innerHTML = `
+                        <img src="${f.image_b64}">
+                        <div style="margin-top: 6px;">
+                            <input type="text" id="nameInput_${f.index}" class="text-input" style="padding: 4px; font-size: 0.75rem; text-align: center;" placeholder="Ad (örn: Polat)">
+                            <button class="btn btn-emerald" style="width: 100%; padding: 4px; font-size: 0.7rem; margin-top: 4px;" onclick="saveFace('${f.image_b64}', 'nameInput_${f.index}')">
+                                ➕ Ekle
+                            </button>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+
+            } catch (err) {
+                container.innerHTML = `<div style='color: var(--accent-rose); font-size: 0.8rem;'>Hata: ${err.message}</div>`;
+            }
+        }
+
+        async function saveFace(imageB64, inputId) {
+            const input = document.getElementById(inputId);
+            const name = input ? input.value.trim() : "Karakter";
+            if (!name) return alert("Lütfen bir karakter adı girin (örn: Polat)");
+
+            try {
+                const res = await fetch("/api/save-character-face", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ character_name: name, image_b64: imageB64 })
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                alert(`'${name}' karakteri başarıyla kaydedildi!`);
+                loadCharacters();
+            } catch (err) {
+                alert("Kaydetme Hatası: " + err.message);
+            }
+        }
+
+        // 4. Kayıtlı Karakterleri ve Yüzleri Dikey Olarak Listele
+        async function loadCharacters() {
+            try {
+                const res = await fetch("/api/characters");
+                const data = await res.json();
+                const container = document.getElementById("charactersList");
+                container.innerHTML = "";
+
+                if (!data.characters || data.characters.length === 0) {
+                    container.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 18px; background: rgba(15,23,42,0.5); border-radius: 8px; border: 1px dashed var(--border-color);">Henüz kayıtlı karakter/yüz yok. Aşağıdaki videodan seçin.</div>`;
+                    return;
+                }
+
+                data.characters.forEach(c => {
+                    const group = document.createElement("div");
+                    group.className = "char-group-card";
+
+                    let facesHtml = "";
+                    if (c.images && c.images.length > 0) {
+                        c.images.forEach((img, idx) => {
+                            facesHtml += `
+                                <div class="char-face-row">
+                                    <div class="char-face-row-left">
+                                        <img src="${img.thumbnail}" class="char-face-thumb" alt="${c.name} Yüz #${idx+1}">
+                                        <div>
+                                            <div class="char-face-label">#${idx+1} Kayıtlı Referans Yüz</div>
+                                            <div class="char-face-sub">${img.filename}</div>
+                                        </div>
+                                    </div>
+                                    <button class="char-face-del-btn" onclick="deleteCharacterImage('${c.name}', '${img.filename}')" title="Bu yüz fotoğrafını sil">
+                                        🗑️ Sil
+                                    </button>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        facesHtml = `<div style="color: var(--text-muted); font-size: 0.75rem; padding: 6px;">Kayıtlı fotoğraf bulunamadı.</div>`;
+                    }
+
+                    group.innerHTML = `
+                        <div class="char-group-header">
+                            <div class="char-group-title">
+                                <span>👤 ${c.name}</span>
+                                <span class="char-group-badge">${c.image_count} Yüz Kayıtlı</span>
+                            </div>
+                            <button class="char-group-del-btn" onclick="deleteCharacter('${c.name}')" title="Karakteri ve tüm yüzlerini sil">
+                                ❌ Karakteri Sil
+                            </button>
+                        </div>
+                        <div class="char-faces-vertical-list">
+                            ${facesHtml}
+                        </div>
+                    `;
+                    container.appendChild(group);
+                });
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function deleteCharacterImage(charName, filename) {
+            if (!confirm(`'${charName}' için '${filename}' fotoğrafını silmek istediğinize emin misiniz?`)) return;
+            try {
+                const res = await fetch("/api/delete-character-image", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ character_name: charName, filename: filename })
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                loadCharacters();
+            } catch (err) {
+                alert("Silme hatası: " + err.message);
+            }
+        }
+
+        async function deleteCharacter(name) {
+            if (!confirm(`'${name}' karakterini ve kayıtlı TÜM yüzlerini silmek istediğinize emin misiniz?`)) return;
+            await fetch("/api/delete-character", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name })
+            });
+            loadCharacters();
+        }
+
+        // 5. Scenepack İptal Et / Durdur
+        async function cancelScenepack() {
+            if (!confirm("Devam eden sahne tarama ve indirme işlemini iptal etmek istediğinize emin misiniz?")) return;
+            const btn = document.getElementById("btnCancelScenepack");
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "Durduruluyor...";
+            }
+            try {
+                const res = await fetch("/api/cancel-task", { method: "POST" });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+                checkTaskStatus();
+            } catch (err) {
+                alert("İptal hatası: " + err.message);
+            } finally {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "⏹ İşlemi İptal Et / Durdur";
+                }
+            }
+        }
+
+        // 6. Scenepack Başlat
+        async function startScenepack() {
+            const url = document.getElementById("youtubeUrl").value.trim();
+            if (!url) return alert("Lütfen bir YouTube linki girin!");
+
+            const logic = document.getElementById("matchLogic").value;
+            const minDur = document.getElementById("minDuration").value;
+            const quality = document.getElementById("videoQuality").value;
+
+            // Playlistten seçilen videoları al
+            let selectedIndices = null;
+            if (inspectedVideos && inspectedVideos.length > 1) {
+                const checkedBoxes = document.querySelectorAll('.playlist-video-checkbox:checked');
+                selectedIndices = Array.from(checkedBoxes).map(cb => parseInt(cb.value));
+                if (selectedIndices.length === 0) {
+                    return alert("Lütfen playlistten en az bir bölüm seçin!");
+                }
+            }
+
+            const btn = document.getElementById("btnStartScenepack");
+            btn.disabled = true;
+
+            try {
+                const res = await fetch("/api/start-scenepack", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        url,
+                        logic,
+                        min_duration: minDur,
+                        quality,
+                        selected_indices: selectedIndices
+                    })
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
+
+                checkTaskStatus();
+            } catch (err) {
+                alert("Başlatma Hatası: " + err.message);
+                btn.disabled = false;
+            }
+        }
+
+        // 7. Canlı Durum Takibi
+        async function checkTaskStatus() {
+            try {
+                const res = await fetch("/api/task-status");
+                const state = await res.json();
+
+                // Status Badge & Cancel Button Controls
+                const sBadge = document.getElementById("statusBadge");
+                const btnCancel = document.getElementById("btnCancelScenepack");
+                const btnCancelMini = document.getElementById("btnCancelScenepackMini");
+                const btnStart = document.getElementById("btnStartScenepack");
+
+                sBadge.innerText = (state.status || "idle").toUpperCase();
+
+                if (state.status === "running") {
+                    sBadge.style.background = "rgba(6, 182, 212, 0.2)";
+                    sBadge.style.color = "var(--primary)";
+                    if (btnStart) btnStart.disabled = true;
+                    if (btnCancel) btnCancel.style.display = "block";
+                    if (btnCancelMini) btnCancelMini.style.display = "inline-flex";
+                } else if (state.status === "completed") {
+                    sBadge.style.background = "rgba(16, 185, 129, 0.2)";
+                    sBadge.style.color = "var(--accent-emerald)";
+                    if (btnStart) btnStart.disabled = false;
+                    if (btnCancel) btnCancel.style.display = "none";
+                    if (btnCancelMini) btnCancelMini.style.display = "none";
+                } else if (state.status === "error") {
+                    sBadge.style.background = "rgba(244, 63, 94, 0.2)";
+                    sBadge.style.color = "var(--accent-rose)";
+                    if (btnStart) btnStart.disabled = false;
+                    if (btnCancel) btnCancel.style.display = "none";
+                    if (btnCancelMini) btnCancelMini.style.display = "none";
+                } else {
+                    sBadge.style.background = "rgba(255, 255, 255, 0.08)";
+                    sBadge.style.color = "var(--text-muted)";
+                    if (btnStart) btnStart.disabled = false;
+                    if (btnCancel) btnCancel.style.display = "none";
+                    if (btnCancelMini) btnCancelMini.style.display = "none";
+                }
+
+                // Progress Bar
+                document.getElementById("currentStepText").innerText = state.step_name || "Hazır";
+                document.getElementById("progressPctText").innerText = `%${state.progress_pct || 0}`;
+                document.getElementById("progressBarFill").style.width = `${state.progress_pct || 0}%`;
+
+                // Loglar
+                if (state.logs && state.logs.length > 0) {
+                    const consoleEl = document.getElementById("consoleLog");
+                    consoleEl.innerHTML = state.logs.join("<br>");
+                    consoleEl.scrollTop = consoleEl.scrollHeight;
+                }
+
+                // Eşleşen Sahneler Tablosu
+                const tbody = document.getElementById("matchedScenesTableBody");
+                document.getElementById("matchedCountBadge").innerText = `${state.matched_scenes.length} Sahne`;
+
+                if (state.matched_scenes.length > 0) {
+                    tbody.innerHTML = "";
+                    state.matched_scenes.forEach(m => {
+                        const tr = document.createElement("tr");
+                        tr.innerHTML = `
+                            <td style="font-weight: 600; color: var(--primary);">#${m.scene_index}</td>
+                            <td>${m.start_time} - ${m.end_time}</td>
+                            <td>${m.duration}</td>
+                            <td><span class="scene-tag">${m.characters.join(', ')}</span></td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+                }
+
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        let currentOutputFolderPath = "";
+
+        async function openOutputFolder() {
+            const modal = document.getElementById("outputFolderModal");
+            if (modal) modal.style.display = "flex";
+            
+            triggerExplorerOpen();
+
+            try {
+                const res = await fetch("/api/output-files");
+                const data = await res.json();
+                currentOutputFolderPath = data.path || "";
+                const pathEl = document.getElementById("modalFolderPath");
+                if (pathEl) pathEl.innerText = currentOutputFolderPath;
+
+                const listEl = document.getElementById("modalFilesList");
+                listEl.innerHTML = "";
+
+                if (!data.files || data.files.length === 0) {
+                    listEl.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 24px;">Henüz tamamlanan veya kesilen video yok. Sahne paketini başlattığınızda burada listelenecektir.</div>`;
+                    return;
+                }
+
+                data.files.forEach(f => {
+                    const row = document.createElement("div");
+                    row.className = "playlist-item-row";
+                    row.innerHTML = `
+                        <span style="font-size: 1.1rem;">🎬</span>
+                        <div style="flex: 1; min-width: 0;">
+                            <div class="playlist-item-title" title="${f.name}">${f.name}</div>
+                            <div class="playlist-item-dur">${f.size_mb} MB</div>
+                        </div>
+                        <div style="display: flex; gap: 6px;">
+                            <a href="${f.url}" target="_blank" class="btn btn-secondary" style="padding: 4px 10px; font-size: 0.75rem; text-decoration: none;">
+                                ▶ İzle
+                            </a>
+                            <a href="${f.url}" download="${f.name}" class="btn btn-emerald" style="padding: 4px 10px; font-size: 0.75rem; text-decoration: none;">
+                                ⬇ İndir
+                            </a>
+                        </div>
+                    `;
+                    listEl.appendChild(row);
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        async function triggerExplorerOpen() {
+            try {
+                await fetch("/api/open-folder", { method: "POST" });
+            } catch(e) {}
+        }
+
+        function closeOutputModal() {
+            const modal = document.getElementById("outputFolderModal");
+            if (modal) modal.style.display = "none";
+        }
+
+        function copyFolderPath() {
+            if (currentOutputFolderPath) {
+                navigator.clipboard.writeText(currentOutputFolderPath);
+                alert("Klasör yolu panoya kopyalandı:\n" + currentOutputFolderPath);
+            }
+        }
+    </script>
+
+    <!-- ÇIKTI DOSYALARI & KLASÖR MODALI -->
+    <div id="outputFolderModal" class="modal-overlay" onclick="if(event.target === this) closeOutputModal()">
+        <div class="modal-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 1.1rem; color: var(--text-main); display: flex; align-items: center; gap: 8px;">
+                    📁 Çıktı Klasörü ve Scenepack Videoları
+                </h3>
+                <button class="char-del" style="position: static; font-size: 14px;" onclick="closeOutputModal()">✕</button>
+            </div>
+            
+            <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--primary);" id="modalFolderPath">
+                    Yükleniyor...
+                </div>
+                <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                    <button class="btn btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;" onclick="copyFolderPath()">
+                        📋 Yolu Kopyala
+                    </button>
+                    <button class="btn btn-emerald" style="padding: 6px 12px; font-size: 0.75rem;" onclick="triggerExplorerOpen()">
+                        📂 Gezginde Aç
+                    </button>
+                </div>
+            </div>
+
+            <div id="modalFilesList" style="max-height: 320px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px;">
+                <div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 20px;">
+                    Dosyalar taranıyor...
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

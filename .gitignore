@@ -1,0 +1,23 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Geçici indirme ve önbellek dosyaları
+temp_cache/
+*.mp4
+*.m4a
+*.part
+*.ytdl
+
+# Hassas dosyalar
+cookies.txt
+.env
+
+# Editör ve IDE ayarları
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
