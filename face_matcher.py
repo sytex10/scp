@@ -126,14 +126,29 @@ class FaceMatcherEngine:
                     detector_backend=self.config.deepface_detector,
                     enforce_detection=False
                 )
+                frame_h, frame_w = frame.shape[:2]
                 for item in reps:
-                    # facial_area geçerli mi kontrol et
+                    # Yüzün gerçekliğini ve geçerliliğini sıkı denetle
+                    confidence = item.get("confidence")
                     area = item.get("facial_area", {})
                     w = area.get("w", 0)
                     h = area.get("h", 0)
-                    # Çok küçük sahte yüzleri filtrele
-                    if w > 20 and h > 20:
-                        frame_embeddings.append(np.array(item["embedding"], dtype=np.float32))
+                    
+                    # 1. Eğer yüz bulunamadıysa DeepFace confidence'ı None döner veya tüm kareyi verir (0.0)
+                    if confidence is None or (isinstance(confidence, (int, float)) and confidence < 0.55):
+                        continue
+                        
+                    # 2. Tüm ekranın veya çok küçük parazitlerin sahte yüz sayılmasını engelle
+                    if w < 28 or h < 28:
+                        continue
+                    if w > (frame_w * 0.85) and h > (frame_h * 0.85):
+                        continue
+
+                    # 3. YuNet göz noktası kontrolü (gerçek insan yüzü filtresi)
+                    if self.config.deepface_detector.lower() == "yunet" and area.get("left_eye") is None:
+                        continue
+
+                    frame_embeddings.append(np.array(item["embedding"], dtype=np.float32))
 
             elif self.engine_type == "face_recognition":
                 rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -185,10 +200,12 @@ class FaceMatcherEngine:
             if len(self.characters) > 1 and len(frame_chars_found) >= 2:
                 simultaneous_co_presence = True
 
-        # Karakterlerin bu sahnede onaylanma kriteri
+        # Karakterlerin bu sahnede onaylanma kriteri:
+        # Sahne kısa ise (<= 3 kare) en az 1 kare yeterli; 4+ kare varsa en az 2 karede net görünmeli!
+        required_hits = 1 if len(sampled_frames) <= 3 else max(2, self.config.min_matching_frames)
         confirmed_chars = [
             c for c, count in char_matches.items()
-            if count >= self.config.min_matching_frames
+            if count >= required_hits
         ]
 
         # Mantıksal Değerlendirme (OR / AND)

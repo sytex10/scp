@@ -41,15 +41,17 @@ class VideoFacePicker:
             except Exception:
                 pass
 
-        # DeepFace ile yüz çıkarma denemesi
+        # DeepFace YuNet ile yüz çıkarma
         try:
             from deepface import DeepFace
-            extracted = DeepFace.extract_faces(frame, detector_backend="opencv", enforce_detection=False)
+            extracted = DeepFace.extract_faces(frame, detector_backend="yunet", enforce_detection=False)
             results = []
             for item in extracted:
+                if item.get("confidence") is None or item.get("confidence", 0) < 0.55:
+                    continue
                 area = item.get("facial_area", {})
                 x, y, w, h = area.get("x", 0), area.get("y", 0), area.get("w", 0), area.get("h", 0)
-                if w > 20 and h > 20:
+                if w > 28 and h > 28:
                     results.append((int(x), int(y), int(w), int(h)))
             if results:
                 return results

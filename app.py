@@ -505,12 +505,17 @@ def run_scenepack_thread(url: str, match_logic: str, min_duration: float, qualit
                     matched_for_this_video.append((sc, match_res))
                     add_log(f"✔ Sahne {sc.scene_index} Eşleşti! ({', '.join(match_res['characters'])})")
 
-            # 4. Kesme & Dışa Aktarma
+            # 4. Ultra-Hızlı Kesme & Dışa Aktarma
             if matched_for_this_video:
-                TASK_STATE["step_name"] = f"[{v_idx}/{len(videos)}] Sahneler 1080p Kesiliyor..."
+                TASK_STATE["step_name"] = f"[{v_idx}/{len(videos)}] Yüksek Kalite Video İndiriliyor (Hızlı Kesim)..."
+                add_log(f"⚡ {len(matched_for_this_video)} onaylı sahne bulundu! Yüksek kalite video tek seferde indiriliyor...")
+                
+                master_path = engine.download_master_video(vid_url, vid_id, quality)
+
+                TASK_STATE["step_name"] = f"[{v_idx}/{len(videos)}] Sahneler Ultra-Hızlı Kesiliyor..."
                 for s_idx, (sc, mres) in enumerate(matched_for_this_video, start=1):
                     if CANCEL_FLAG.is_set():
-                        add_log("[İPTAL] Sahne indirme durduruldu.")
+                        add_log("[İPTAL] Sahne kesimi durduruldu.")
                         return
 
                     chars_tag = "_".join(mres["characters"]) or "Match"
@@ -518,9 +523,9 @@ def run_scenepack_thread(url: str, match_logic: str, min_duration: float, qualit
                     end_str_short = f"{int(sc.end_sec // 60):02d}m{int(sc.end_sec % 60):02d}s"
                     filename = f"Scenepack_{clean_title[:25]}_S{sc.scene_index:03d}_{chars_tag}_{start_str_short}-{end_str_short}.mp4"
 
-                    add_log(f"İndiriliyor: {filename} ({sc.duration_sec:.1f} sn)")
-                    cut_file = engine.download_exact_scene_section(
-                        video_url=vid_url,
+                    add_log(f"✂ Kesiliyor ({s_idx}/{len(matched_for_this_video)}): {filename} ({sc.duration_sec:.1f} sn)")
+                    cut_file = engine.cut_scene_from_local(
+                        source_path=master_path,
                         start_sec=sc.start_sec,
                         end_sec=sc.end_sec,
                         output_filename=filename
@@ -528,6 +533,13 @@ def run_scenepack_thread(url: str, match_logic: str, min_duration: float, qualit
                     TASK_STATE["exported_files"].append(cut_file.name)
                     pct = 70 + int((s_idx / len(matched_for_this_video)) * 30)
                     TASK_STATE["progress_pct"] = min(100, pct)
+
+                # Geçici master videoyu sil (disk dolmasın)
+                if not CONFIG.keep_proxy and master_path.exists():
+                    try:
+                        os.remove(master_path)
+                    except Exception:
+                        pass
 
             # Geçici proxy sil
             if proxy_path.exists():

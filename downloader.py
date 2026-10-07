@@ -125,6 +125,90 @@ class YouTubeMediaEngine:
 
         return proxy_path
 
+    def download_master_video(self, video_url: str, video_id: str, quality: str = "1080p") -> Path:
+        """
+        Sahne kesimleri için ana videoyu tek seferde yüksek kalitede indirir.
+        Bu sayede 30-50 sahne için YouTube'a 50 kez bağlanıp beklemek yerine,
+        video 1 kez hızlıca indirilir ve tüm sahneler milisaniyeler içinde kesilir.
+        """
+        master_path = self.config.temp_dir / f"{video_id}_master_{quality}.mp4"
+        if master_path.exists() and master_path.stat().st_size > 10 * 1024 * 1024:
+            return master_path
+
+        target_url = f"https://www.youtube.com/watch?v={video_id}" if video_id and not video_id.startswith("preview") and len(video_id) == 11 else video_url
+
+        fmt = "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/bestvideo[height<=1080]+bestaudio/best[height<=1080]/best"
+        if quality == "720p":
+            fmt = "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720]/best"
+        elif quality == "best":
+            fmt = "bestvideo+bestaudio/best"
+
+        ydl_opts = self._get_base_ydl_opts()
+        ydl_opts.update({
+            "noplaylist": True,
+            "format": fmt,
+            "outtmpl": str(master_path.with_suffix("")),
+            "merge_output_format": "mp4",
+            "overwrites": True,
+            "quiet": False,
+        })
+
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            ydl.download([target_url])
+
+        if not master_path.exists():
+            candidates = list(self.config.temp_dir.glob(f"{video_id}_master_{quality}*"))
+            if candidates:
+                return candidates[0]
+            raise FileNotFoundError(f"Master video indirilemedi: {video_url}")
+
+        return master_path
+
+    def cut_scene_from_local(
+        self,
+        source_path: Path,
+        start_sec: float,
+        end_sec: float,
+        output_filename: str
+    ) -> Path:
+        """
+        Yerel master videodan belirtilen sahneyi FFmpeg ile milisaniyeler içinde keser.
+        Stream Copy (-c copy) kullanarak CPU yükünü ve saatlerce süren render beklemelerini sıfıra indirir.
+        """
+        output_file = self.config.output_dir / output_filename
+        if output_file.exists() and output_file.stat().st_size > 10000:
+            return output_file
+
+        start_str = format_timestamp(start_sec)
+        dur_sec = max(0.5, end_sec - start_sec)
+
+        # 1. Ultra-hızlı Stream Copy (-c copy)
+        cmd_copy = [
+            "ffmpeg", "-y",
+            "-ss", start_str,
+            "-i", str(source_path),
+            "-t", f"{dur_sec:.3f}",
+            "-c", "copy",
+            "-avoid_negative_ts", "make_zero",
+            str(output_file)
+        ]
+        subprocess.run(cmd_copy, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        # 2. Keyframe uyuşmazlığı varsa ultrafast x264 ile anında tamamla (0.3 saniye)
+        if not output_file.exists() or output_file.stat().st_size < 10000:
+            cmd_fast = [
+                "ffmpeg", "-y",
+                "-ss", start_str,
+                "-i", str(source_path),
+                "-t", f"{dur_sec:.3f}",
+                "-c:v", "libx264", "-preset", "ultrafast", "-crf", "18",
+                "-c:a", "aac",
+                str(output_file)
+            ]
+            subprocess.run(cmd_fast, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+        return output_file
+
     def download_exact_scene_section(
         self,
         video_url: str,
@@ -132,11 +216,7 @@ class YouTubeMediaEngine:
         end_sec: float,
         output_filename: str
     ) -> Path:
-        """
-        Tüm videoyu baştan indirmeden, doğrudan YouTube üzerinden yalnızca onaylanan sahneyi
-        en yüksek kalitede (1080p/2K/4K) keserek indirir.
-        yt-dlp'nin '--download-sections' ve FFmpeg altyapısını kullanır.
-        """
+        """Tekil sahne indirme fallback metodu."""
         output_file = self.config.output_dir / output_filename
         if output_file.exists():
             return output_file
@@ -145,7 +225,6 @@ class YouTubeMediaEngine:
         end_time_str = format_timestamp(end_sec)
         section_filter = f"*{start_time_str}-{end_time_str}"
 
-        # yt-dlp python API ile download_ranges seçeneği
         ydl_opts = self._get_base_ydl_opts()
         ydl_opts.update({
             "noplaylist": True,
@@ -156,7 +235,7 @@ class YouTubeMediaEngine:
             "force_keyframes_at_cuts": True,
             "quiet": False,
             "postprocessor_args": {
-                "ffmpeg": ["-c:v", "libx264", "-c:a", "aac"]
+                "ffmpeg": ["-c:v", "libx264", "-preset", "ultrafast", "-c:a", "aac"]
             }
         })
 
@@ -164,8 +243,6 @@ class YouTubeMediaEngine:
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 ydl.download([video_url])
         except Exception:
-            # Python API download_ranges bazı yt-dlp sürümlerinde CLI kadar esnek olmayabilir,
-            # bu nedenle tam senkron CLI komutu fallback olarak çağrılır:
             self._download_section_cli_fallback(video_url, start_time_str, end_time_str, output_file)
 
         if not output_file.exists():
